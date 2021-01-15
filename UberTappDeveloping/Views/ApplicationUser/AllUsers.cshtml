@@ -1,0 +1,118 @@
+﻿@model UberTappDeveloping.ViewModels.UserViewModel
+@using Microsoft.AspNet.Identity
+@using UberTappDeveloping.Helper.Roles;
+
+@*<style></style>*@
+<link href="~/Content/KotsDisplay.css" rel="stylesheet" />
+@*<style></style>*@
+
+<body id="AllUsersView" class="body">
+    <div class="container-fluid">
+
+        <div id="TitleContainer" class="row">
+            <div class="form-group col-md-6">
+                <img id="CheersBeerImg" src="~/Helper/Images/4.png" alt="Alternate Text" />
+                <img id="AllUsersImg" src="~/Helper/Images/AllUsers.png" alt="Alternate Text" />
+                <img id="CheersBeerImg" src="~/Helper/Images/4.png" alt="Alternate Text" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-2">
+                <button id="myProfile" class="btn btn-sm btn-primary">@Html.ActionLink("My Profile", "Details", "ApplicationUser", new { Id = User.Identity.GetUserId() }, new { title = "View Profile" })</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div id="UserField" class="form-group col-md-9">
+                <table id="users" class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Username</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.AllUsers)
+                        {
+                            <tr>
+                                <td>@user.Email</td>
+                                <td>@user.UserName</td>
+                                <td>@user.FirstName</td>
+                                <td>@user.LastName</td>
+                                <td class="buttons">
+                                    @if (Model.ShowActions)
+                                    {
+                                        <button class="btn btn-sm btn-info">@Html.ActionLink("Info", "Details", "ApplicationUser", new { Id = user.Id }, new { title = "View User's Profile" })</button>
+                                        <button class="btn btn-sm btn-success">@Html.ActionLink("Edit", "Edit", "ApplicationUser", new { Id = user.Id }, new { title = "Update User's Info" })</button>
+                                        <button class="btn btn-sm btn-danger js-delete" data-user-id="@user.Id" title="Delete This User">Delete</button>
+                                    }
+                                    @if (User.IsInRole(RoleNames.BeerEnthusiast)) //skip current user
+                                    {
+                                        <a href="#" class="follow" data-user-name="@user.FirstName" data-user-id="@user.Id">
+                                            @if (Model.Followers.Contains(user.Id))
+                                            {
+                                                <span class="btn btn-info">Unfollow</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="btn btn-primary">Follow</span>
+                                            }
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-group col-md-3">
+                <img id="UsersTranspImg" src="~/Helper/Images/users_transp.png" alt="Alternate Text" />
+            </div>
+        </div>
+    </div>
+</body>
+
+@section Scripts
+{
+
+    <script src="~/Scripts/app/controllers/adminDelete.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $("table").on("click", ".follow", function (e) {
+                if ($(e.target).text() == "Follow") {
+                    $.post("/api/followers/" + $(e.target).parent().attr("data-user-id"), function () {
+                    })
+                        .done(function () {
+                            $(e.target).text("Unfollow").removeClass("btn-primary").addClass("btn-info");
+                            bootbox.alert("You are now following " + $(e.target).parent().attr("data-user-name"));
+                        })
+                        .fail(function (e) {
+                            console.log(e);
+                            bootbox.alert(e.responseJSON.message);
+                        });
+                } else {
+                    $.ajax({
+                        url: "/api/followers/" + $(e.target).parent().attr("data-user-id"),
+                        method: "Delete"
+                    })
+                        .done(function () {
+                            $(e.target).text("Follow").removeClass("btn-info").addClass("btn-primary");
+                            bootbox.alert($(e.target).parent().attr("data-user-name") + " no longer followed");
+                        })
+                        .fail(function () {
+                            bootbox.alert("something went wrong");
+                        });
+                }
+
+            });
+        });
+    </script>
+}
+
+

@@ -1,0 +1,253 @@
+﻿@model UberTappDeveloping.Models.ApplicationUser
+@using Microsoft.AspNet.Identity
+@using UberTappDeveloping.Helper.Roles;
+
+@*<style></style>*@
+<link href="~/Content/KotsDisplay.css" rel="stylesheet" />
+@*<style></style>*@
+
+<body id="DetailsView" class="body">
+    <div class="container-fluid">
+
+        <div id="TitleContainer" class="row">
+            <div class="form-group col-md-5">
+                <img id="SingleBeerImg" src="~/Helper/Images/15.png" alt="Alternate Text" />
+                <img id="ProfileDetailsImg" src="~/Helper/Images/Profile_Details.png" alt="Alternate Text" />
+                <img id="SingleBeerImg" src="~/Helper/Images/15.png" alt="Alternate Text" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div id="profileDetBtn" class="form-group col-md-5">
+                @if (User.IsInRole(RoleNames.Admin))
+                {
+                    <button class="btn btn-sm btn-primary">@Html.ActionLink("All Users", "AllUsers", null, new { title = "View All Users" })</button>
+                }
+                else if (User.IsInRole(RoleNames.BeerEnthusiast))
+                {
+                    <button class="btn btn-sm btn-primary">@Html.ActionLink("All Users", "AllUsers", null, new { title = "View All Users" })</button>
+                    <button class="btn btn-sm btn-success">@Html.ActionLink("Edit", "Edit", new { Id = User.Identity.GetUserId() }, new { title = "Update Profile" })</button>
+                    <button id="deleteBtn" class="btn btn-sm btn-danger" title="Delete Profile">Delete</button>
+
+                    if (Model.IsPremiumUser == false)
+                    {
+                        <button class="btn btn-sm btn-primary">@Html.ActionLink("Become A Premium User", "ViewPermiumOffer", "PayPal", new { Id = User.Identity.GetUserId() }, new { title = "More Info" })</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-sm btn-primary">@Html.ActionLink("Check Your Membership Status", "SuccessfulPayment", "PayPal", new { Id = User.Identity.GetUserId() }, new { title = "Membership Status" })</button>
+                    }
+
+                    <span id="notifications">
+                        <i class="fa fa-bell" id="bell-icon" data-toggle="modal" data-target="#myModal"></i>
+                        <span class="badge js-notification-count hide"></span>
+                    </span>
+                }
+                else
+                {
+                    <button class="btn btn-sm btn-success">@Html.ActionLink("Edit", "Edit", new { Id = User.Identity.GetUserId() }, new { title = "Update Profile" })</button>
+                    <button id="deleteBtn" class="btn btn-sm btn-danger" title="Delete Profile">Delete</button>
+                }
+            </div>
+        </div>
+
+        <div class="row">
+            <div id="ProfileDetailsField" class="form-group col-md-5">
+                <table class="table table-hover">
+                    <tbody>
+                        <tr>
+                            <td>First Name</td>
+                            @if (Model.FirstName == null)
+                            {
+                                <td><i>First Name not assigned</i></td>
+                            }
+                            else
+                            {
+                                <td>@Html.DisplayFor(model => model.FirstName)</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td>Last Name</td>
+                            @if (Model.LastName == null)
+                            {
+                                <td><i>Last Name not assigned</i></td>
+                            }
+                            else
+                            {
+                                <td>@Html.DisplayFor(model => model.LastName)</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td>Date Of Birth</td>
+                            @if (Model.BirthDate == null)
+                            {
+                                <td><i>Date Of Birth not assigned</i></td>
+                            }
+                            else
+                            {
+                                <td>@Html.DisplayFor(model => model.BirthDate)</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td>Gender</td>
+                            @if (Model.Gender == null)
+                            {
+                                <td><i>Gender not assigned</i></td>
+                            }
+                            else
+                            {
+                                <td>@Html.DisplayFor(model => model.Gender)</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td>Location</td>
+                            <td>
+                                @Html.DisplayFor(model => model.Location.Display)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Email</td>
+                            <td>@Html.DisplayFor(model => model.Email)</td>
+                        </tr>
+                        <tr>
+                            <td>Username</td>
+                            <td>@Html.DisplayFor(model => model.UserName)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="form-group col-md-7">
+                <img id="UsersTransp2Img" src="~/Helper/Images/14.png" alt="Alternate Text" />
+            </div>
+        </div>
+
+        <!--Modal-->
+        <div class="modal fade" id="myModal" role="dialog">
+            <div class="modal-dialog ">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title"><i class="fa fa-bell"></i> Notifications</h4>
+                    </div>
+                    <div class="modal-body">
+                        <ul>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+    </div>
+</body>
+
+@section Scripts
+{
+
+    <script src="~/Scripts/app/controllers/deleteProfile.js"></script>
+
+    <script src="~/Scripts/moment.js"></script>
+
+    <script>
+
+        $(document).ready(function () {
+            $("#myModel").change(function () {
+                console.log("modal change!");
+            })
+            $.get("/api/notifications", function (notifications) {
+                console.log(notifications);
+
+                $(".js-notification-count").text(notifications.length).removeClass("hide").addClass("animated fadeInDown");
+
+
+            }).done(function (notifications) {
+
+                $("#bell-icon").click(function (e) {
+                    $(".modal-body ul").text("");
+                    notifications.forEach(ViewNotification);
+                    
+                    if (notifications == "")
+                        $(".modal-body ul").html("<p style='text-align:center;margin-top:200px;'>You have 0 Notifications</p>");
+                    $.post("/api/notifications", function () {
+
+                    })
+                        .done(function () {
+                            $(".js-notification-count").text("").addClass("hide");
+                            
+                        })
+                        .fail(function () {
+                            alert("something failed");
+                        });
+
+                });
+
+                function ViewNotification(notification) {
+                    console.log(notification);
+                    var date = moment(`${notification.event.date}`).format("MMMM, dddd DD - yyyy");
+                    var originalDate = moment(`${notification.originalDate}`).format("MMMM, dddd DD - yyyy");
+                    var image = `<img class="img-circle" src="data:image/gif;base64,${notification.venueProfileImage}" />`;
+                    if (notification.type == 1) {
+
+                        var content = `Venue <a href='@Url.Action("VenueProfile","venue")?id=${notification.event.venueId}'>${notification.event.venue.name}</a>
+                                        <span style="color:green;font-size:21px;">has created</span> a new Event on ${date}!`;
+                        $(".modal-body ul").append($("<li style='border-color:green'>").append(image).append($("<div>").html(content)));
+
+                    } else if (notification.type == 2) {
+                        var content;
+                        if (notification.originalVenueId != notification.event.venue.id) {
+                            content = `Venue <a href='@Url.Action("VenueProfile","venue")?id=${notification.originalVenueId}'>${notification.originalVenueName}</a>
+                             with description `;
+                            if (notification.originalDescription != notification.event.description)
+                                content += `<u>${notification.originalDescription}</u> <span style="color:blue;font-size:21px;">changed</span>
+                                            it's description to <u>${notification.event.description}</u>,`;
+                            else
+                                content += `<u>${notification.event.description}</u>`;
+                            if (originalDate != "")
+                                content += ` moved it's date from ${originalDate}</u> to <u>${date}`
+                            else
+                                content += ` on ${date}`
+
+                            content += ` and changed it's location to <a href='@Url.Action("VenueProfile","venue")?id=${notification.event.venueId}'>${notification.event.venue.name}</a>!`;
+
+                            $(".modal-body ul").append($("<li style='border-color:blue'>").append(image).append($("<div>").html(content)));
+                        } else {
+                            content = `Venue <a href='@Url.Action("VenueProfile","venue")?id=${notification.event.venueId}'>${notification.event.venue.name}</a>
+                             with description `;
+                            if (notification.originalDescription != notification.event.description)
+                                content += `<u>${notification.originalDescription}</u> <span style="color:blue;font-size:21px;">changed</span>
+                                            it's description to <u>${notification.event.description}</u>,`;
+                            else
+                                content += `<u>${notification.event.description}</u>,`;
+                            if (originalDate != date)
+                                content += ` moved it's date from ${originalDate} to ${date}!`
+                            else
+                                content += ` on ${date}!`
+
+                            $(".modal-body ul").append($("<li style='border-color:blue'>").append(image).append($("<div>").html(content)));
+                        }
+                    } else {
+                        var content = `Venue <a href='@Url.Action("VenueProfile","venue")?id=${notification.event.venueId}'>${notification.event.venue.name}</a>
+                                        <span style="color:red;font-size:21px;">has canceled</span> an Event on ${date} 
+                                        with description <u>${notification.event.description}</u>!`;
+
+                        $(".modal-body ul").append($("<li style='border-color:red'>").append(image).append($("<div>").html(content)));
+                    }
+                }
+            })
+
+
+
+        });
+
+    </script>
+
+}
+

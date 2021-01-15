@@ -1,0 +1,63 @@
+﻿.container {
+    width: 90%;
+    font-family: 'East Sea Dokdo', cursive;
+}
+@import url('https://fonts.googleapis.com/css2?family=East+Sea+Dokdo&display=swap');
+body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+/*BootStrap Override*/
+
+
+
+footer {
+    border-top: solid;
+    margin-top: 10%;
+    padding: 5px 10px;
+}
+
+.field-validation-error {
+    color: whitesmoke;
+}
+
+.input-validation-error {
+    border: 2px solid whitesmoke;
+}
+
+input, select, textarea {
+    max-width: 100%;
+}
+
+/* MapCSS*/
+
+#map {
+    height: 444px;
+    width: 100%;
+}
+
+#latlng {
+    width: 100px;
+}
+
